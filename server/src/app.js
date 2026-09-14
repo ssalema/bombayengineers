@@ -53,6 +53,12 @@ export function createApp() {
 
   app.use(morgan(env.isProduction ? 'combined' : 'dev', { stream: httpLogStream }));
 
+  // Friendly landing response when the server URL is opened directly.
+  app.get('/', (_req, res) => {
+    res.set('Cache-Control', 'no-store');
+    res.json({ success: true, message: 'Server is working' });
+  });
+
   app.use(API_PREFIX, apiLimiter, v1Routes);
 
   app.use(notFoundHandler);

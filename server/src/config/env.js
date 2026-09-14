@@ -29,7 +29,7 @@ const envSchema = z
     // Fail closed: a host that forgets NODE_ENV gets production behaviour, not debug output.
     NODE_ENV: z.enum(['development', 'production', 'test']).default('production'),
     PORT: z.coerce.number().int().positive().default(5000),
-    CLIENT_URL: z.string().default('http://localhost:5173'),
+    ADMIN_URL: z.string().default('http://localhost:5173'),
     APP_TIMEZONE: z.string().default('Asia/Kolkata'),
     TRUST_PROXY: trustProxy,
 
@@ -71,7 +71,7 @@ export const env = Object.freeze({
   isDevelopment: raw.NODE_ENV === 'development',
   // Default: one proxy in production, none elsewhere.
   trustProxy: raw.TRUST_PROXY ?? (raw.NODE_ENV === 'production' ? 1 : false),
-  clientOrigins: raw.CLIENT_URL.split(',').map((o) => o.trim()).filter(Boolean),
+  clientOrigins: raw.ADMIN_URL.split(',').map((o) => o.trim()).filter(Boolean),
   cloudinaryEnabled: Boolean(
     raw.CLOUDINARY_CLOUD_NAME && raw.CLOUDINARY_API_KEY && raw.CLOUDINARY_API_SECRET,
   ),
