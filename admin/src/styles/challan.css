@@ -1,0 +1,278 @@
+/*
+ * Challan document styles, shared by preview, print and PDF.
+ * Physical units (mm / pt) keep the A4 layout exact.
+ */
+
+.ch-root,
+.ch-root * {
+  box-sizing: border-box;
+}
+
+.ch-root {
+  --ch-brand: #1b5a72;
+  --ch-brand-tint: #e7f0f4;
+  --ch-ink: #1a1a1a;
+  --ch-muted: #555;
+  --ch-line: #2f3a40;
+  --ch-soft-line: #b8c4ca;
+  font-family: 'Inter Variable', 'Inter', 'Segoe UI', Arial, sans-serif;
+  color: var(--ch-ink);
+  background: #fff;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ---------- A4 page ---------- */
+.ch-page {
+  width: 210mm;
+  height: 297mm;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  page-break-after: always;
+  break-after: page;
+}
+.ch-page:last-child {
+  page-break-after: auto;
+  break-after: auto;
+}
+
+/* ---------- One challan copy ---------- */
+.ch-copy {
+  width: 210mm;
+  display: flex;
+  flex-direction: column;
+  padding: 8mm 12mm 7mm;
+  font-size: 9.5pt;
+  line-height: 1.35;
+  background: #fff;
+}
+.ch-copy--half {
+  height: 147mm;
+}
+.ch-copy--full {
+  min-height: 297mm;
+  padding: 14mm 14mm 12mm;
+  font-size: 10.5pt;
+}
+.ch-copy--preview {
+  min-height: 0;
+}
+
+/* Title */
+.ch-title-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0 2.5mm;
+}
+.ch-title {
+  display: inline-block;
+  padding: 1.2mm 6mm;
+  border: 0.35mm solid var(--ch-brand);
+  border-radius: 1mm;
+  color: var(--ch-brand);
+  font-weight: 800;
+  font-size: 11.5pt;
+  letter-spacing: 0.18em;
+}
+.ch-copy-label {
+  position: absolute;
+  right: 0;
+  font-size: 7.5pt;
+  font-weight: 600;
+  color: var(--ch-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Meta */
+.ch-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 4mm;
+  margin-bottom: 2mm;
+}
+.ch-meta-item {
+  white-space: nowrap;
+}
+.ch-label {
+  color: var(--ch-muted);
+  margin-right: 1.5mm;
+}
+.ch-value {
+  font-weight: 700;
+}
+.ch-ms {
+  display: flex;
+  align-items: baseline;
+  gap: 2mm;
+  margin-bottom: 2.5mm;
+}
+.ch-ms-name {
+  flex: 1;
+  font-weight: 700;
+  border-bottom: 0.25mm dotted var(--ch-line);
+  padding-bottom: 0.5mm;
+  min-height: 5mm;
+  word-break: break-word;
+}
+
+/* Items table */
+.ch-table-wrap {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.ch-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.ch-table th,
+.ch-table td {
+  border: 0.25mm solid var(--ch-line);
+  padding: 1.1mm 2mm;
+  vertical-align: middle;
+}
+.ch-table thead th {
+  background: var(--ch-brand-tint);
+  color: var(--ch-brand);
+  font-weight: 700;
+  font-size: 8.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.ch-copy--full .ch-table th,
+.ch-copy--full .ch-table td {
+  padding: 1.6mm 2.2mm;
+}
+.ch-table tbody td {
+  border-top-color: var(--ch-soft-line);
+  border-bottom-color: var(--ch-soft-line);
+  height: 5.6mm;
+}
+.ch-copy--full .ch-table tbody td {
+  height: 7mm;
+}
+.ch-col-sr { width: 15mm; text-align: center; white-space: nowrap; }
+.ch-col-qty { width: 18mm; text-align: right; }
+.ch-col-rate { width: 26mm; text-align: right; }
+.ch-col-amount { width: 30mm; text-align: right; }
+.ch-table td.ch-desc {
+  word-break: break-word;
+}
+.ch-num {
+  font-variant-numeric: tabular-nums;
+}
+.ch-table tfoot td {
+  font-weight: 700;
+  background: var(--ch-brand-tint);
+  padding-top: 1.4mm;
+  padding-bottom: 1.4mm;
+}
+.ch-total-label {
+  text-align: right;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ch-brand);
+}
+
+.ch-words {
+  margin-top: 2mm;
+  padding: 1.5mm 2mm;
+  border: 0.25mm dashed var(--ch-soft-line);
+  border-radius: 1mm;
+}
+.ch-words .ch-label {
+  font-weight: 600;
+}
+.ch-words-value {
+  font-weight: 600;
+  font-style: italic;
+}
+
+/* Signatures */
+.ch-sign {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 10mm;
+  margin-top: auto;
+  padding-top: 14mm;
+}
+.ch-sign-box {
+  min-width: 55mm;
+  text-align: center;
+  font-size: 8.5pt;
+}
+.ch-sign-line {
+  border-top: 0.3mm solid var(--ch-line);
+  padding-top: 1mm;
+  color: var(--ch-muted);
+}
+/* Half-A4 copy: compact rhythm so two copies fit one sheet */
+.ch-copy--half {
+  padding: 6mm 12mm 5mm;
+  overflow: hidden;
+}
+.ch-copy--half .ch-title-row {
+  margin: 0 0 2mm;
+}
+.ch-copy--half .ch-title {
+  padding: 0.8mm 5mm;
+  font-size: 10.5pt;
+}
+.ch-copy--half .ch-meta {
+  margin-bottom: 1mm;
+}
+.ch-copy--half .ch-ms {
+  margin-bottom: 1.5mm;
+}
+.ch-copy--half .ch-table th,
+.ch-copy--half .ch-table td {
+  padding: 0.6mm 2mm;
+}
+.ch-copy--half .ch-table tbody td {
+  height: 4.8mm;
+}
+.ch-copy--half .ch-table tfoot td {
+  padding-top: 0.9mm;
+  padding-bottom: 0.9mm;
+}
+.ch-copy--half .ch-words {
+  margin-top: 1.5mm;
+  padding: 1mm 2mm;
+}
+.ch-copy--half .ch-sign {
+  padding-top: 8mm;
+}
+
+/* Cut line between the two copies */
+.ch-cut {
+  position: relative;
+  height: 3mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ch-cut::before {
+  content: '';
+  position: absolute;
+  left: 6mm;
+  right: 6mm;
+  top: 50%;
+  border-top: 0.3mm dashed #7a878d;
+}
+.ch-cut span {
+  position: relative;
+  background: #fff;
+  padding: 0 2mm;
+  font-size: 7pt;
+  color: #7a878d;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}

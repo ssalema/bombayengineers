@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Title, favicon and meta tags are set at runtime from Settings. -->
+    <title></title>
+    <meta name="theme-color" content="#1B5A72" />
+    <!-- Private admin panel: keep it out of public search results. -->
+    <meta name="robots" content="noindex, nofollow" />
+    <meta property="og:type" content="website" />
+    <!-- Empty icon stops the browser requesting /favicon.ico before settings load. -->
+    <link id="app-favicon" rel="icon" href="data:," />
+    <!-- Runtime config (API URL), see public/config.js. -->
+    <script defer src="/config.js"></script>
+  </head>
+  <body>
+    <noscript>This application requires JavaScript to run.</noscript>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
