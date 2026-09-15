@@ -66,7 +66,7 @@ export function useDocumentBranding() {
   const { tagline } = settings;
 
   useEffect(() => {
-    document.title = siteName;
+    document.title = `${siteName || 'Bombay Engineers'} — Admin`;
     setMeta('meta[name="application-name"]', 'name', 'application-name', siteName);
     setMeta('meta[property="og:title"]', 'property', 'og:title', siteName);
     setMeta('meta[name="description"]', 'name', 'description', tagline);
