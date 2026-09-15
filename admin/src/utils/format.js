@@ -22,7 +22,7 @@ export const formatNumber = (value) => numberFormatter.format(Number(value) || 0
 export const formatCompactCurrency = (value) => `₹${compactFormatter.format(Number(value) || 0)}`;
 
 /** Placeholder for missing values. */
-export const EMPTY_VALUE = '—';
+export const EMPTY_VALUE = 'NA';
 
 export const formatDate = (value) => (value ? dayjs(value).format('DD MMM YYYY') : EMPTY_VALUE);
 

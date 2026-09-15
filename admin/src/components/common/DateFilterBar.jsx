@@ -67,7 +67,7 @@ export function DateFilterBar({ value, onChange }) {
   const monthDate = dayjs(`${month}-01`);
   const now = dayjs();
 
-  const pickerField = { size: 'small', sx: { width: { xs: '100%', sm: 170 } } };
+  const pickerField = { size: 'small', sx: { width: { xs: '100%', sm: 200 }, flexShrink: 0 } };
 
   return (
     <Box
@@ -106,7 +106,7 @@ export function DateFilterBar({ value, onChange }) {
       )}
 
       {period === PERIODS.CUSTOM && (
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: { xs: 'wrap', sm: 'nowrap' }, width: { xs: '100%', sm: 'auto' } }}>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: { xs: 'wrap', sm: 'nowrap' }, flexShrink: 0, width: { xs: '100%', sm: 'auto' } }}>
           <LocalizedDatePicker
             label="From"
             value={from ? dayjs(from) : null}

@@ -36,11 +36,11 @@ export function ChallanCopy({ challan, copyLabel, variant = 'full' }) {
       <div className="ch-meta">
         <div className="ch-meta-item">
           <span className="ch-label">Challan No:</span>
-          <span className="ch-value">{data.challanNo || '—'}</span>
+          <span className="ch-value">{data.challanNo || 'NA'}</span>
         </div>
         <div className="ch-meta-item">
           <span className="ch-label">Date:</span>
-          <span className="ch-value">{formatChallanDate(data.date) || '—'}</span>
+          <span className="ch-value">{formatChallanDate(data.date) || 'NA'}</span>
         </div>
       </div>
 

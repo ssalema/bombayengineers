@@ -51,6 +51,8 @@ export default function LoginPage() {
     }
   };
 
+  const brandGradient = `radial-gradient(circle at 20% 10%, ${alpha(brand.light, 0.45)} 0, transparent 45%), linear-gradient(160deg, ${brand.main} 0%, ${brand.dark} 70%)`;
+
   return (
     <Box sx={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.05fr 1fr' }, bgcolor: 'background.default' }}>
       <Box
@@ -61,7 +63,7 @@ export default function LoginPage() {
           justifyContent: 'space-between',
           p: 6,
           color: '#fff',
-          background: `radial-gradient(circle at 20% 10%, ${alpha(brand.light, 0.45)} 0, transparent 45%), linear-gradient(160deg, ${brand.main} 0%, ${brand.dark} 70%)`,
+          background: brandGradient,
         }}
       >
         {logoUrl || siteName || settingsLoading ? (
@@ -74,7 +76,7 @@ export default function LoginPage() {
 
         <Box sx={{ maxWidth: 460 }}>
           <Typography variant="h3" sx={{ mb: 2 }}>
-            {siteName ? `${siteName} challans, organised.` : 'Your challans, organised.'}
+            {siteName ? `${siteName} Cash Challan Management` : 'Cash Challan Management'}
           </Typography>
           <Typography variant="subtitle1" sx={{ color: alpha('#fff', 0.78), fontWeight: 400, mb: 4 }}>
             Create, print and track every delivery challan{siteName ? ` for ${siteName}` : ''} from one place.
@@ -94,11 +96,33 @@ export default function LoginPage() {
         </Typography>
       </Box>
 
-      <Box component="main" sx={{ display: 'grid', placeItems: 'center', p: { xs: 2.5, sm: 4 } }}>
-        <Box sx={{ width: '100%', maxWidth: 400 }}>
-          <Box sx={{ display: { xs: 'flex', md: 'none' }, justifyContent: 'center', mb: 4 }}>
-            <BrandLogo height={34} />
+      <Box
+        component="main"
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: { xs: 2.5, sm: 4 },
+          background: { xs: brandGradient, md: 'none' },
+        }}
+      >
+        <Box sx={{ display: { xs: 'flex', md: 'none' }, justifyContent: 'center', width: '100%', maxWidth: 400, mb: 3 }}>
+          <Box sx={{ bgcolor: '#fff', borderRadius: radius.xl, px: 2.5, py: 1.5 }}>
+            <BrandLogo height={34} sx={{ maxWidth: '100%' }} />
           </Box>
+        </Box>
+
+        <Box
+          sx={{
+            width: '100%',
+            maxWidth: 400,
+            bgcolor: { xs: 'background.default', md: 'transparent' },
+            borderRadius: { xs: radius.xl, md: 0 },
+            p: { xs: 3, md: 0 },
+            boxShadow: { xs: `0 20px 50px ${alpha('#000', 0.25)}`, md: 'none' },
+          }}
+        >
 
           <Typography variant="h4" component="h1" sx={{ mb: 1 }}>
             Welcome back
@@ -173,6 +197,10 @@ export default function LoginPage() {
             </Button>
           </Box>
         </Box>
+
+        <Typography variant="body2" sx={{ display: { xs: 'block', md: 'none' }, mt: 3, color: alpha('#fff', 0.55) }}>
+          © {new Date().getFullYear()}{siteName ? ` ${siteName}` : ''}
+        </Typography>
       </Box>
     </Box>
   );

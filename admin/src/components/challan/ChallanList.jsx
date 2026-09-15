@@ -119,9 +119,9 @@ export function ChallanList({ clientId, defaultPeriod = PERIODS.MONTHLY }) {
           />
         ) : (
           <StatCard
-            label="Active clients"
+            label="Clients billed"
             value={formatNumber(summary?.clientCount)}
-            helper="Clients with challans"
+            helper={periodLabel}
             icon={GroupsOutlinedIcon}
             tone="warning"
             loading={summaryLoading}
