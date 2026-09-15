@@ -3,21 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!--
-      Static defaults: link-preview crawlers (WhatsApp, Telegram, Facebook, Slack)
-      don't run JS, so these must be in the HTML. Settings override them at runtime.
-    -->
-    <title>Bombay Engineers — Admin</title>
-    <meta name="description" content="Bombay Engineers — Cash Challan Management Panel" />
     <meta name="theme-color" content="#1B5A72" />
-    <!-- Private admin panel: keep it out of public search results. -->
-    <meta name="robots" content="noindex, nofollow" />
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Bombay Engineers" />
-    <meta property="og:title" content="Bombay Engineers — Admin" />
-    <meta property="og:description" content="Bombay Engineers — Cash Challan Management Panel" />
-    <meta property="og:image" content="/favicon.png" />
+    <meta name="description" content="Bombay Engineers — Cash Challan Management Panel" />
     <link id="app-favicon" rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <title>Bombay Engineers — Admin</title>
     <!-- Runtime config (API URL), see public/config.js. -->
     <script defer src="/config.js"></script>
   </head>

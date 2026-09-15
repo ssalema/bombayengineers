@@ -1,0 +1,13 @@
+{
+  "name": "Bombay Engineers — Admin",
+  "short_name": "Bombay Engineers",
+  "description": "Bombay Engineers — Cash Challan Management Panel",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#1B5A72",
+  "background_color": "#ffffff",
+  "icons": [
+    { "src": "/favicon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
