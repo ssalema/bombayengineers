@@ -31,8 +31,33 @@ const unavailableReason = () => {
 const isCancelled = (error) => error?.name === 'AbortError' || error?.name === 'NotAllowedError';
 
 /**
- * Opens the device phonebook and returns the chosen contact as `{ name, tel }`
+ * One `{ name, tel }` entry per distinct phone number across the picked contacts, so a
+ * contact with several numbers can be narrowed down too. A contact without any number
+ * still yields one entry with `tel: ''`, so the caller can say why nothing was filled.
+ */
+const toCandidates = (contacts) => {
+  const seen = new Set();
+  return contacts.flatMap((contact) => {
+    const name = contact.name?.find(Boolean)?.trim() ?? '';
+    const tels = (contact.tel ?? []).map((t) => t?.trim()).filter(Boolean);
+    if (!tels.length) return [{ name, tel: '' }];
+    return tels
+      .filter((tel) => {
+        const key = `${name}|${tel.replace(/\D/g, '').slice(-10)}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .map((tel) => ({ name, tel }));
+  });
+};
+
+/**
+ * Opens the device phonebook and returns the picked numbers as `[{ name, tel }]`
  * (either may be ''), or `null` when the picker is unavailable, cancelled or fails.
+ * Usually one entry, but callers must let the user choose when there are more:
+ * Chrome's Android picker ignores `multiple: false` once its search box is used, and
+ * a single contact may carry several numbers.
  * `onUnavailable(reason)` fires when the device can't open a phonebook at all;
  * `onError(message)` fires only for failures after a supported picker was opened.
  */
@@ -40,7 +65,7 @@ export function useContactPicker({ onError, onUnavailable } = {}) {
   const [picking, setPicking] = useState(false);
   const supported = useMemo(() => isSupported(), []);
 
-  const pickContact = useCallback(async () => {
+  const pickContacts = useCallback(async () => {
     if (!isSupported()) {
       onUnavailable?.(unavailableReason());
       return null;
@@ -50,19 +75,8 @@ export function useContactPicker({ onError, onUnavailable } = {}) {
     setPicking(true);
     try {
       const contacts = await navigator.contacts.select(['name', 'tel'], { multiple: false });
-      // Chrome's Android picker ignores `multiple: false` once its search box is used, so
-      // several contacts can still come back. They arrive in list order, not tap order, so
-      // there is no telling which one was meant — ask again rather than guess.
-      if (contacts.length > 1) {
-        onError?.('Please select only one contact.');
-        return null;
-      }
-      const [contact] = contacts;
-      if (!contact) return null;
-      return {
-        name: contact.name?.find(Boolean)?.trim() ?? '',
-        tel: contact.tel?.find(Boolean)?.trim() ?? '',
-      };
+      const candidates = toCandidates(contacts ?? []);
+      return candidates.length ? candidates : null;
     } catch (error) {
       if (!isCancelled(error)) onError?.('Could not open contacts. Enter the number manually.');
       return null;
@@ -71,5 +85,5 @@ export function useContactPicker({ onError, onUnavailable } = {}) {
     }
   }, [onError, onUnavailable, picking]);
 
-  return { pickContact, picking, isSupported: supported };
+  return { pickContacts, picking, isSupported: supported };
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -8,6 +8,7 @@ import { Box, CircularProgress, Dialog, DialogContent, DialogTitle, IconButton, 
 import PermContactCalendarOutlinedIcon from '@mui/icons-material/PermContactCalendarOutlined';
 import { DialogCloseButton } from '../../components/common/DialogCloseButton';
 import { DialogFooter } from '../../components/common/DialogFooter';
+import { ContactChoiceDialog } from '../../components/common/ContactChoiceDialog';
 import { clientApi } from '../../api/services';
 import { toLocalMobile } from '../../utils/format';
 import { queryKeys } from '../../api/queryKeys';
@@ -47,19 +48,31 @@ export function ClientFormDialog({ open, client, onClose, onSaved }) {
   // Devices without a phonebook API say so on tap rather than hiding the button, so the
   // field looks the same everywhere and the reason is never a silent mystery.
   const onPickerUnavailable = useCallback((reason) => enqueueSnackbar(reason, { variant: 'info' }), [enqueueSnackbar]);
-  const { pickContact, picking, isSupported: canPickContact } = useContactPicker({
+  // Set when the phonebook returns several numbers, so the user picks the one they meant.
+  const [contactChoices, setContactChoices] = useState(null);
+  const { pickContacts, picking, isSupported: canPickContact } = useContactPicker({
     onError: onPickerError,
     onUnavailable: onPickerUnavailable,
   });
 
   useEffect(() => {
     if (open) reset({ name: client?.name ?? '', contactNumber: toLocalMobile(client?.contactNumber ?? '') });
+    else setContactChoices(null);
   }, [open, client, reset]);
 
   const handlePickContact = async () => {
-    const contact = await pickContact();
-    if (!contact) return;
+    const candidates = await pickContacts();
+    if (!candidates) return;
+    if (candidates.length === 1) applyContact(candidates[0]);
+    else setContactChoices(candidates);
+  };
 
+  const handleChooseContact = (contact) => {
+    setContactChoices(null);
+    applyContact(contact);
+  };
+
+  const applyContact = (contact) => {
     const mobile = toLocalMobile(contact.tel).slice(0, 10);
     if (!mobile) {
       enqueueSnackbar('That contact has no phone number. Enter it manually.', { variant: 'warning' });
@@ -148,6 +161,7 @@ export function ClientFormDialog({ open, client, onClose, onSaved }) {
         </DialogContent>
         <DialogFooter submit confirmLabel={isEdit ? 'Save changes' : 'Add client'} loading={mutation.isPending} />
       </Box>
+      <ContactChoiceDialog candidates={contactChoices} onChoose={handleChooseContact} onClose={() => setContactChoices(null)} />
     </Dialog>
   );
 }
