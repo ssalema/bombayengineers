@@ -30,7 +30,6 @@ export function UnsavedChangesDialog({
       title={title}
       message={message}
       confirmLabel={confirmLabel}
-      cancelLabel="Keep editing"
       tone="warning"
       onConfirm={() => blocker.proceed?.()}
       onClose={() => blocker.reset?.()}

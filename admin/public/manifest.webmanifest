@@ -1,7 +1,5 @@
 {
-  "name": "Bombay Engineers — Admin",
-  "short_name": "Bombay Engineers — Admin",
-  "description": "Bombay Engineers — Cash Challan Management System",
+  "description": "Cash Challan Management System",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

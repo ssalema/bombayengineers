@@ -1,0 +1,23 @@
+{
+  "challan": {
+    "title": "Delivery Challan",
+    "clientCopy": "Client Copy",
+    "officeCopy": "Office Copy",
+    "cutHere": "Cut here",
+    "challanNo": "Challan No:",
+    "date": "Date:",
+    "ms": "M/S",
+    "contact": "Contact:",
+    "empty": "NA",
+    "columns": {
+      "srNo": "Sr No",
+      "description": "Description",
+      "qty": "Qty",
+      "rate": "Rate",
+      "amount": "Amount"
+    },
+    "totalAmount": "Total Amount",
+    "amountInWords": "Amount in Words:",
+    "note": "Note:"
+  }
+}

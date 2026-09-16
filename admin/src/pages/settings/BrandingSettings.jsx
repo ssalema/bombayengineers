@@ -23,7 +23,7 @@ const COPY = {
   },
   favicon: {
     title: 'Favicon',
-    hint: 'Square PNG, 64×64px or larger. Also used as the challan watermark.',
+    hint: 'Square PNG, 512×512px or larger',
   },
 };
 
@@ -152,7 +152,7 @@ export function BrandingSettings({ settings, pending, disabled, onPick, onRemove
         <Typography variant="subtitle1" component="h2">
           Branding
         </Typography>
-        <Tooltip title="Used in the sidebar, login page and the browser tab. PNG, JPG, ICO or WEBP · max 2 MB.">
+        <Tooltip title="Used in the sidebar, login page and the browser tab. The favicon is also used as the app icon and the challan watermark. PNG, JPG, ICO or WEBP · max 2 MB.">
           <InfoOutlinedIcon fontSize="small" color="action" />
         </Tooltip>
       </Box>

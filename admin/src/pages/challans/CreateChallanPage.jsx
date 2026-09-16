@@ -24,6 +24,7 @@ import { PageHeader } from '../../components/common/PageHeader';
 import { UnsavedChangesDialog } from '../../components/common/UnsavedChangesDialog';
 import { LocalizedDatePicker } from '../../components/common/LocalizedDatePicker';
 import { ScaledChallanPreview } from '../../components/challan/ScaledChallanPreview';
+import { ChallanLanguageDialog } from '../../components/challan/ChallanLanguageDialog';
 import { useDebounce } from '../../hooks/useDebounce';
 import { invalidateChallanData, useChallanActions } from '../../hooks/useChallanActions';
 import { amountInWords } from '../../utils/amountInWords';
@@ -422,6 +423,8 @@ export default function CreateChallanPage() {
           </>
         )}
       </Dialog>
+
+      <ChallanLanguageDialog {...actions.languagePrompt} />
     </>
   );
 }

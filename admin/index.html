@@ -1,19 +1,24 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <!--
+      No business name appears here on purpose. The name, title and icons come from
+      Settings → General at runtime (see useDocumentBranding in
+      src/hooks/useSiteSettings.js), which also restores the last known name from
+      localStorage on the first paint. Until then the tab is untitled and the browser
+      shows the URL — a stand-in name would just be the wrong one.
+    -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#205B75" />
-    <meta name="description" content="Bombay Engineers — Cash Challan Management System" />
-    <meta name="application-name" content="Bombay Engineers — Admin" />
-    <meta name="apple-mobile-web-app-title" content="Bombay Engineers — Admin" />
+    <meta name="description" content="Cash Challan Management System" />
     <!-- Home-screen app mode on iOS < 16.4, which ignores the manifest's "display". -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <link id="app-favicon" rel="icon" type="image/png" href="/favicon.png" />
     <link id="app-touch-icon" rel="apple-touch-icon" sizes="180x180" href="/apple-icon.png" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <title>Bombay Engineers — Admin</title>
+    <link id="app-manifest" rel="manifest" href="/manifest.webmanifest" />
+    <title></title>
     <!-- Runtime config (API URL), see public/config.js. -->
     <script defer src="/config.js"></script>
   </head>

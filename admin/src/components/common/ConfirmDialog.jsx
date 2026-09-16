@@ -10,7 +10,6 @@ export function ConfirmDialog({
   title = 'Are you sure?',
   message,
   confirmLabel = 'Delete',
-  cancelLabel = 'Cancel',
   tone = 'error',
   loading = false,
   onConfirm,
@@ -40,8 +39,6 @@ export function ConfirmDialog({
         <Typography color="text.secondary">{message}</Typography>
       </DialogContent>
       <DialogFooter
-        onCancel={onClose}
-        cancelLabel={cancelLabel}
         confirmLabel={confirmLabel}
         onConfirm={onConfirm}
         color={tone}

@@ -51,7 +51,7 @@ export default function LoginPage() {
     }
   };
 
-  const brandGradient = `radial-gradient(circle at 20% 10%, ${alpha(brand.light, 0.45)} 0, transparent 45%), linear-gradient(160deg, ${brand.main} 0%, ${brand.dark} 70%)`;
+  const brandGradient = `linear-gradient(160deg, ${brand.main} 0%, ${brand.dark} 70%)`;
 
   return (
     <Box sx={{ ...fullViewportHeight, display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.05fr 1fr' }, bgcolor: 'background.default' }}>
@@ -76,7 +76,7 @@ export default function LoginPage() {
 
         <Box sx={{ maxWidth: 460 }}>
           <Typography variant="h3" sx={{ mb: 2 }}>
-            {siteName ? `${siteName} Cash Challan Management` : 'Cash Challan Management'}
+            {siteName ? `${siteName} - CCMS` : 'CCMS'}
           </Typography>
           <Typography variant="subtitle1" sx={{ color: alpha('#fff', 0.78), fontWeight: 400, mb: 4 }}>
             Create, print and track every delivery challan{siteName ? ` for ${siteName}` : ''} from one place.
@@ -92,7 +92,7 @@ export default function LoginPage() {
         </Box>
 
         <Typography variant="body2" sx={{ color: alpha('#fff', 0.55) }}>
-          © {new Date().getFullYear()}{siteName ? ` ${siteName}` : ''}
+          © {new Date().getFullYear()}{siteName ? ` ${siteName}` : ''}. All rights reserved.
         </Typography>
       </Box>
 

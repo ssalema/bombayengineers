@@ -64,7 +64,7 @@ export function DescriptionFormDialog({ open, description, onClose }) {
             {...register('name')}
           />
         </DialogContent>
-        <DialogFooter submit onCancel={onClose} confirmLabel={isEdit ? 'Save changes' : 'Add description'} loading={mutation.isPending} />
+        <DialogFooter submit confirmLabel={isEdit ? 'Save changes' : 'Add description'} loading={mutation.isPending} />
       </Box>
     </Dialog>
   );

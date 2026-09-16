@@ -20,7 +20,10 @@
   /* Column dividers inside the brand bars (brand + 35% white, solid for html2canvas) */
   --ch-brand-divider: #6e94a5;
   --ch-cut: #7a8e97;
-  font-family: 'Inter Variable', 'Inter', 'Segoe UI', Arial, sans-serif;
+  /* Inter covers Latin; Noto Sans Gujarati is only reached for Gujarati glyphs, so a Gujarati
+     copy keeps the same look for figures, dates and client names. */
+  font-family: 'Inter Variable', 'Inter', 'Noto Sans Gujarati Variable', 'Noto Sans Gujarati',
+    'Shruti', 'Segoe UI', Arial, sans-serif;
   color: var(--ch-ink);
   background: #fff;
   -webkit-print-color-adjust: exact;
@@ -82,6 +85,7 @@
   font-weight: 800;
   font-size: 17pt;
   letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 .ch-copy-label {
   position: absolute;
@@ -154,7 +158,7 @@
   width: 55%;
   height: 72%;
   object-fit: contain;
-  opacity: 0.04;
+  opacity: 0.03;
   pointer-events: none;
   user-select: none;
 }
@@ -331,6 +335,53 @@
   padding-top: 8mm;
 }
 
+/* ---------- Gujarati copies ----------
+   Gujarati has no letter case, and its conjuncts and matras break up when tracked out, so the
+   uppercase + wide letter-spacing treatment used for English labels is dropped. Sizes are nudged
+   down a touch because Gujarati words set wider; no box, column or margin changes. */
+.ch-copy[lang='gu'],
+.ch-cut span[lang='gu'] {
+  line-height: 1.5;
+}
+.ch-copy[lang='gu'] .ch-title,
+.ch-copy[lang='gu'] .ch-copy-label,
+.ch-copy[lang='gu'] .ch-table thead th,
+.ch-copy[lang='gu'] .ch-total-label,
+.ch-cut span[lang='gu'] {
+  text-transform: none;
+  letter-spacing: 0.01em;
+}
+.ch-copy[lang='gu'] .ch-title {
+  font-size: 16pt;
+  letter-spacing: 0.08em;
+}
+.ch-copy--half[lang='gu'] .ch-title {
+  font-size: 15pt;
+}
+.ch-copy[lang='gu'] .ch-table thead th {
+  font-size: 8.5pt;
+}
+.ch-copy[lang='gu'] .ch-total-label {
+  font-size: 9pt;
+}
+/* Figures and the signature block are Latin, so they keep Inter's tighter rhythm. */
+.ch-copy[lang='gu'] .ch-num,
+.ch-copy[lang='gu'] .ch-sign {
+  line-height: 1.35;
+}
+/* Noto Sans Gujarati has no italic; synthetic slanting distorts the matras, so emphasise
+   the amount in words with weight instead. */
+.ch-copy[lang='gu'] .ch-words-value {
+  font-style: normal;
+  font-weight: 700;
+}
+
+/* The scissors glyph is Latin-stack only: Noto Sans Gujarati would otherwise satisfy it from its
+   (large) symbols subset, pulling that file down on every print. */
+.ch-cut-mark {
+  font-family: 'Inter Variable', 'Inter', 'Segoe UI', Arial, sans-serif;
+}
+
 /* Cut line between the two copies */
 .ch-cut {
   position: relative;
@@ -347,7 +398,7 @@
   top: 50%;
   border-top: 0.3mm dashed var(--ch-cut);
 }
-.ch-cut span {
+.ch-cut > span {
   position: relative;
   background: #fff;
   padding: 0 2mm;

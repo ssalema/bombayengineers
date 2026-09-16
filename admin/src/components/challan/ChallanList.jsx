@@ -30,6 +30,7 @@ import { ActionIconButton, RowActions } from '../common/ActionIconButton';
 import { ClickableRow } from '../common/ClickableRow';
 import { EmptyState, ErrorState, TableMessageRow, TableSkeletonRows } from '../common/TableStates';
 import { ChallanPreviewDialog } from './ChallanPreviewDialog';
+import { ChallanLanguageDialog } from './ChallanLanguageDialog';
 
 const COLUMNS = 5;
 
@@ -252,6 +253,9 @@ export function ChallanList({ clientId, defaultPeriod = PERIODS.MONTHLY }) {
       />
 
       <ChallanPreviewDialog challanId={previewId} onClose={() => setPreviewId(null)} actions={actions} />
+
+      {/* Shared by the row actions and the preview dialog: rendered once, next to the hook. */}
+      <ChallanLanguageDialog {...actions.languagePrompt} />
     </>
   );
 }

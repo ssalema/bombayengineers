@@ -20,9 +20,10 @@ export async function updateSettings(body) {
 }
 
 const TRANSFORMS = {
-  // Keep logos crisp for print while capping size; favicons are small squares.
+  // Keep logos crisp for print while capping size. The favicon doubles as the installed
+  // app icon, so pad it to 512x512 — the largest size Chrome asks a manifest for.
   logo: [{ width: 800, height: 400, crop: 'limit' }, { quality: 'auto', fetch_format: 'png' }],
-  favicon: [{ width: 128, height: 128, crop: 'pad', background: 'transparent' }, { fetch_format: 'png' }],
+  favicon: [{ width: 512, height: 512, crop: 'pad', background: 'transparent' }, { fetch_format: 'png' }],
 };
 
 export async function uploadAsset(asset, file) {

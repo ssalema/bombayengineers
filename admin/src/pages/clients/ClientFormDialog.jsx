@@ -1,16 +1,18 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSnackbar } from 'notistack';
-import { Box, Dialog, DialogContent, DialogTitle, InputAdornment, TextField } from '@mui/material';
+import { Box, CircularProgress, Dialog, DialogContent, DialogTitle, IconButton, InputAdornment, TextField, Tooltip } from '@mui/material';
+import PermContactCalendarOutlinedIcon from '@mui/icons-material/PermContactCalendarOutlined';
 import { DialogCloseButton } from '../../components/common/DialogCloseButton';
 import { DialogFooter } from '../../components/common/DialogFooter';
 import { clientApi } from '../../api/services';
 import { toLocalMobile } from '../../utils/format';
 import { queryKeys } from '../../api/queryKeys';
 import { applyServerErrors, getErrorMessage } from '../../utils/errors';
+import { useContactPicker } from '../../hooks/useContactPicker';
 
 const clientSchema = z.object({
   name: z.string().trim().min(2, 'Client name must be at least 2 characters').max(120, 'Client name is too long'),
@@ -31,12 +33,39 @@ export function ClientFormDialog({ open, client, onClose, onSaved }) {
     handleSubmit,
     reset,
     setError,
+    setValue,
+    getValues,
     formState: { errors },
   } = useForm({ resolver: zodResolver(clientSchema), defaultValues: { name: '', contactNumber: '' } });
+
+  const onPickerError = useCallback((message) => enqueueSnackbar(message, { variant: 'error' }), [enqueueSnackbar]);
+  // Devices without a phonebook API say so on tap rather than hiding the button, so the
+  // field looks the same everywhere and the reason is never a silent mystery.
+  const onPickerUnavailable = useCallback((reason) => enqueueSnackbar(reason, { variant: 'info' }), [enqueueSnackbar]);
+  const { pickContact, picking, isSupported: canPickContact } = useContactPicker({
+    onError: onPickerError,
+    onUnavailable: onPickerUnavailable,
+  });
 
   useEffect(() => {
     if (open) reset({ name: client?.name ?? '', contactNumber: toLocalMobile(client?.contactNumber ?? '') });
   }, [open, client, reset]);
+
+  const handlePickContact = async () => {
+    const contact = await pickContact();
+    if (!contact) return;
+
+    const mobile = toLocalMobile(contact.tel).slice(0, 10);
+    if (!mobile) {
+      enqueueSnackbar('That contact has no phone number. Enter it manually.', { variant: 'warning' });
+      return;
+    }
+    // Validate on fill so a landline/short number from the phonebook flags immediately.
+    setValue('contactNumber', mobile, { shouldValidate: true, shouldDirty: true });
+    // Never clobber a name already typed — the number is what was asked for.
+    const name = contact.name.slice(0, 120);
+    if (name && !getValues('name').trim()) setValue('name', name, { shouldValidate: true, shouldDirty: true });
+  };
 
   const mutation = useMutation({
     mutationFn: ({ contactNumber, ...rest }) => {
@@ -85,13 +114,33 @@ export function ClientFormDialog({ open, client, onClose, onSaved }) {
               },
             })}
             slotProps={{
-              input: { startAdornment: <InputAdornment position="start">+91</InputAdornment> },
+              input: {
+                startAdornment: <InputAdornment position="start">+91</InputAdornment>,
+                // Always shown; unsupported devices explain themselves on tap.
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <Tooltip title={canPickContact ? 'Choose from contacts' : 'Phonebook not available on this device'}>
+                      <span>
+                        <IconButton
+                          size="small"
+                          edge="end"
+                          aria-label="Choose contact number from phonebook"
+                          disabled={picking || mutation.isPending}
+                          onClick={handlePickContact}
+                        >
+                          {picking ? <CircularProgress size={18} color="inherit" /> : <PermContactCalendarOutlinedIcon fontSize="small" />}
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  </InputAdornment>
+                ),
+              },
               // No maxLength: pasted "+91 98765 43210" is trimmed to 10 digits in onChange.
               htmlInput: { inputMode: 'numeric' },
             }}
           />
         </DialogContent>
-        <DialogFooter submit onCancel={onClose} confirmLabel={isEdit ? 'Save changes' : 'Add client'} loading={mutation.isPending} />
+        <DialogFooter submit confirmLabel={isEdit ? 'Save changes' : 'Add client'} loading={mutation.isPending} />
       </Box>
     </Dialog>
   );

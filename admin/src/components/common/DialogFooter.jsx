@@ -1,9 +1,10 @@
 import { Button, CircularProgress, DialogActions } from '@mui/material';
 
-/** Dialog footer with Cancel + primary action. Pass `submit` for forms or `onConfirm` for actions. */
+/**
+ * Dialog footer with the primary action only — dialogs are dismissed via the title-bar close
+ * button, so no Cancel is repeated here. Pass `submit` for forms or `onConfirm` for actions.
+ */
 export function DialogFooter({
-  onCancel,
-  cancelLabel = 'Cancel',
   confirmLabel,
   onConfirm,
   submit = false,
@@ -13,9 +14,6 @@ export function DialogFooter({
 }) {
   return (
     <DialogActions>
-      <Button color="inherit" onClick={onCancel} disabled={loading}>
-        {cancelLabel}
-      </Button>
       <Button
         type={submit ? 'submit' : 'button'}
         onClick={submit ? undefined : onConfirm}

@@ -3,8 +3,14 @@ import { flushSync } from 'react-dom';
 import challanCss from '../../styles/challan.css?raw';
 import { ChallanCopy, ChallanPrintSheet } from './ChallanTemplate';
 import { safeFileName } from '../../utils/format';
+import { DEFAULT_LANGUAGE, resolveLanguage } from '../../i18n/languages';
 
 const A4 = { width: 210, height: 297 };
+
+// Weights the challan uses, and a sample string that forces the Gujarati unicode-range subset.
+const FONT_WEIGHTS = ['400', '600', '700', '800'];
+const GUJARATI_FAMILY = 'Noto Sans Gujarati Variable';
+const GUJARATI_SAMPLE = 'ડિલિવરી ચલણ';
 
 export const challanFileBase = (challan) =>
   safeFileName(`${challan.clientName || challan.client?.name || 'Client'} (${challan.challanNo})`);
@@ -75,14 +81,26 @@ const toJpeg = (canvas) => canvas.toDataURL('image/jpeg', JPEG_QUALITY);
  * Prints both copies on A4 from the main document, with print CSS hiding the app UI.
  * iOS WebKit prints the parent page for iframe.print(), so an iframe cannot be used.
  */
-export async function printChallan({ challan, watermarkUrl }) {
+export async function printChallan({
+  challan,
+  watermarkUrl,
+  clientLanguage = DEFAULT_LANGUAGE,
+  officeLanguage = DEFAULT_LANGUAGE,
+}) {
   activePrint?.();
   ensurePrintStyle();
 
   const host = document.createElement('div');
   host.id = PRINT_HOST_ID;
   host.setAttribute('aria-hidden', 'true');
-  host.innerHTML = renderMarkup(<ChallanPrintSheet challan={challan} watermarkUrl={watermarkUrl} />);
+  host.innerHTML = renderMarkup(
+    <ChallanPrintSheet
+      challan={challan}
+      watermarkUrl={watermarkUrl}
+      clientLanguage={clientLanguage}
+      officeLanguage={officeLanguage}
+    />,
+  );
   document.body.appendChild(host);
 
   const previousTitle = document.title;
@@ -105,6 +123,13 @@ export async function printChallan({ challan, watermarkUrl }) {
   fallbackTimer = setTimeout(cleanup, 5 * 60_000);
 
   try {
+    // The Gujarati face is only fetched once Gujarati text is laid out, so wait for it explicitly
+    // rather than letting the print sheet go out in a fallback font.
+    if ([clientLanguage, officeLanguage].some((l) => resolveLanguage(l) === 'gu')) {
+      await Promise.all(
+        FONT_WEIGHTS.map((w) => document.fonts?.load(`${w} 16px "${GUJARATI_FAMILY}"`, GUJARATI_SAMPLE)),
+      );
+    }
     await document.fonts?.ready;
   } catch {
     /* fonts API unavailable */
@@ -115,14 +140,18 @@ export async function printChallan({ challan, watermarkUrl }) {
   window.print();
 }
 
-/** Copies Inter @font-face rules, with absolute font URLs, for use in an isolated document. */
+// Families the challan renders with: Inter for Latin, Noto Sans Gujarati for Gujarati script.
+const DOCUMENT_FONT_FAMILIES = ['Inter', 'Noto Sans Gujarati'];
+const FONT_FAMILY_PATTERN = new RegExp(DOCUMENT_FONT_FAMILIES.join('|'));
+
+/** Copies the challan's @font-face rules, with absolute font URLs, for use in an isolated document. */
 function collectFontFaceCss() {
   const rules = [];
   for (const sheet of Array.from(document.styleSheets)) {
     try {
       const base = sheet.href || document.baseURI;
       for (const rule of Array.from(sheet.cssRules)) {
-        if (!(rule instanceof CSSFontFaceRule) || !rule.cssText.includes('Inter')) continue;
+        if (!(rule instanceof CSSFontFaceRule) || !FONT_FAMILY_PATTERN.test(rule.cssText)) continue;
         rules.push(
           rule.cssText.replace(/url\((['"]?)([^'")]+)\1\)/g, (match, _q, src) =>
             /^(data|blob):/.test(src) ? match : `url("${new URL(src, base).href}")`,
@@ -145,10 +174,10 @@ const A4_HEIGHT_PX = 1123;
  * so phones (narrow viewport, font boosting, stylesheet re-fetch in html2canvas's clone) render
  * exactly like desktop.
  */
-async function renderIsolatedChallan(challan, watermarkUrl) {
+async function renderIsolatedChallan(challan, watermarkUrl, language) {
   const markup = renderMarkup(
     <div className="ch-root">
-      <ChallanCopy challan={challan} variant="full" watermarkUrl={watermarkUrl} />
+      <ChallanCopy challan={challan} variant="full" watermarkUrl={watermarkUrl} language={language} />
     </div>,
   );
 
@@ -171,9 +200,13 @@ html, body { margin: 0; padding: 0; width: ${A4_WIDTH_PX}px; background: #fff;
   doc.close();
 
   try {
-    // Make sure every Inter weight used by the challan is loaded before capturing.
+    // Make sure every weight used by the challan is loaded before capturing. html2canvas rasterises
+    // whatever is laid out at that moment, so an unloaded Gujarati face would fall back to a
+    // system font (or render as boxes) in the PDF.
+    const faces = [['Inter Variable', '₹0Aa']];
+    if (resolveLanguage(language) === 'gu') faces.push([GUJARATI_FAMILY, GUJARATI_SAMPLE]);
     await Promise.all(
-      ['400', '600', '700', '800'].map((w) => doc.fonts?.load(`${w} 16px "Inter Variable"`, '₹0Aa')),
+      faces.flatMap(([family, sample]) => FONT_WEIGHTS.map((w) => doc.fonts?.load(`${w} 16px "${family}"`, sample))),
     );
     await doc.fonts?.ready;
   } catch {
@@ -223,10 +256,10 @@ async function deliverPdf(blob, fileName) {
 }
 
 /** Downloads one challan copy as "Client Name (Challan Number).pdf". */
-export async function downloadChallanPdf({ challan, siteName, watermarkUrl }) {
+export async function downloadChallanPdf({ challan, siteName, watermarkUrl, language = DEFAULT_LANGUAGE }) {
   const [{ default: html2canvas }, { jsPDF }] = await Promise.all([import('html2canvas-pro'), import('jspdf')]);
 
-  const { iframe, element } = await renderIsolatedChallan(challan, watermarkUrl);
+  const { iframe, element } = await renderIsolatedChallan(challan, watermarkUrl, language);
 
   try {
     const canvas = await html2canvas(element, {

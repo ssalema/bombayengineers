@@ -1,0 +1,40 @@
+{
+  "challan": {
+    "title": "ડિલિવરી ચલણ",
+    "clientCopy": "ગ્રાહક નકલ",
+    "officeCopy": "ઓફિસ નકલ",
+    "challanNo": "ચલણ નં:",
+    "date": "તારીખ:",
+    "ms": "મે.",
+    "contact": "સંપર્ક:",
+    "empty": "NA",
+    "columns": {
+      "srNo": "ક્રમ",
+      "description": "વિગત",
+      "qty": "નંગ",
+      "rate": "ભાવ",
+      "amount": "રકમ"
+    },
+    "totalAmount": "કુલ રકમ",
+    "amountInWords": "શબ્દોમાં રકમ:",
+    "note": "નોંધ:",
+    "descriptions": {
+      "diamond-polishing-bench-single-seater": "ડાયમંડ પોલિશિંગ બેન્ચ (સિંગલ સીટર)",
+      "diamond-polishing-bench-double-seater": "ડાયમંડ પોલિશિંગ બેન્ચ (ડબલ સીટર)",
+      "cast-iron-scaife-12": "કાસ્ટ આયર્ન સ્કાઈફ ૧૨\"",
+      "cast-iron-scaife-14": "કાસ્ટ આયર્ન સ્કાઈફ ૧૪\"",
+      "spindle-shaft-assembly": "સ્પિન્ડલ શાફ્ટ એસેમ્બલી",
+      "bench-motor-1-hp": "બેન્ચ મોટર ૧ HP",
+      "tang-holder": "ટેંગ હોલ્ડર",
+      "dop-stick-set-of-10": "ડોપ સ્ટીક (૧૦ નંગનો સેટ)",
+      "v-belt-a-42": "વી-બેલ્ટ A-42",
+      "bearing-housing": "બેરિંગ હાઉસિંગ",
+      "motor-pulley": "મોટર પુલી",
+      "scaife-balancing-service": "સ્કાઈફ બેલેન્સિંગ સર્વિસ",
+      "scaife-re-grooving": "સ્કાઈફ રી-ગ્રુવિંગ",
+      "bench-repairing-charges": "બેન્ચ રીપેરિંગ ચાર્જ",
+      "labour-charges": "મજૂરી ચાર્જ",
+      "transport-charges": "ટ્રાન્સપોર્ટ ચાર્જ"
+    }
+  }
+}
