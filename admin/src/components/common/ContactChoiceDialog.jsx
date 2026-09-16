@@ -1,6 +1,5 @@
 import { Dialog, DialogContent, DialogTitle, List, ListItemButton, ListItemText, Typography } from '@mui/material';
 import { DialogCloseButton } from './DialogCloseButton';
-import { formatPhone } from '../../utils/format';
 
 /**
  * Asks which of several phonebook entries to use. The device picker can hand back more
@@ -23,7 +22,8 @@ export function ContactChoiceDialog({ candidates, onChoose, onClose }) {
             <ListItemButton key={`${candidate.name}-${candidate.tel}-${index}`} onClick={() => onChoose(candidate)} sx={{ borderRadius: 1 }}>
               <ListItemText
                 primary={candidate.name || 'Unnamed contact'}
-                secondary={candidate.tel ? formatPhone(candidate.tel) || candidate.tel : 'No phone number'}
+                // As saved in the phonebook: reformatting a landline as "+91 …" would pass it off as a mobile.
+                secondary={candidate.tel || 'No phone number'}
               />
             </ListItemButton>
           ))}
