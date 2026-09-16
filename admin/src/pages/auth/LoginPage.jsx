@@ -199,7 +199,7 @@ export default function LoginPage() {
         </Box>
 
         <Typography variant="body2" sx={{ display: { xs: 'block', md: 'none' }, mt: 3, color: alpha('#fff', 0.55) }}>
-          © {new Date().getFullYear()}{siteName ? ` ${siteName}` : ''}
+          © {new Date().getFullYear()}{siteName ? ` ${siteName}` : ''}. All rights reserved.
         </Typography>
       </Box>
     </Box>
