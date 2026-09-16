@@ -17,7 +17,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
 import { BrandLogo } from '../../components/common/BrandLogo';
 import { getErrorMessage } from '../../utils/errors';
-import { brand, radius } from '../../theme/theme';
+import { brand, fullViewportHeight, radius } from '../../theme/theme';
 
 const schema = z.object({
   username: z.string().trim().min(1, 'Username is required'),
@@ -54,7 +54,7 @@ export default function LoginPage() {
   const brandGradient = `radial-gradient(circle at 20% 10%, ${alpha(brand.light, 0.45)} 0, transparent 45%), linear-gradient(160deg, ${brand.main} 0%, ${brand.dark} 70%)`;
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.05fr 1fr' }, bgcolor: 'background.default' }}>
+    <Box sx={{ ...fullViewportHeight, display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.05fr 1fr' }, bgcolor: 'background.default' }}>
       <Box
         component="aside"
         sx={{
@@ -67,8 +67,8 @@ export default function LoginPage() {
         }}
       >
         {logoUrl || siteName || settingsLoading ? (
-          <Box sx={{ bgcolor: '#fff', borderRadius: radius.xl, px: 2.5, py: 1.5, alignSelf: 'flex-start' }}>
-            <BrandLogo height={40} sx={{ maxWidth: 320 }} />
+          <Box sx={{ bgcolor: '#fff', borderRadius: radius.xl, px: 1, py: 0.75, alignSelf: 'flex-start' }}>
+            <BrandLogo height={52} sx={{ maxWidth: 340 }} />
           </Box>
         ) : (
           <Box />
@@ -108,8 +108,8 @@ export default function LoginPage() {
         }}
       >
         <Box sx={{ display: { xs: 'flex', md: 'none' }, justifyContent: 'center', width: '100%', maxWidth: 400, mb: 3 }}>
-          <Box sx={{ bgcolor: '#fff', borderRadius: radius.xl, px: 2.5, py: 1.5 }}>
-            <BrandLogo height={34} sx={{ maxWidth: '100%' }} />
+          <Box sx={{ bgcolor: '#fff', borderRadius: radius.xl, px: 1, py: 0.75 }}>
+            <BrandLogo height={46} sx={{ maxWidth: '100%' }} />
           </Box>
         </Box>
 

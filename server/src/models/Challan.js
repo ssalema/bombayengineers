@@ -23,6 +23,7 @@ const challanSchema = new mongoose.Schema(
       validate: [(v) => Array.isArray(v) && v.length > 0, 'At least one item is required'],
     },
     totalAmount: { type: Number, required: true, min: 0 },
+    notes: { type: [{ type: String, trim: true, maxlength: 200 }], default: [] },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   },
   { timestamps: true, versionKey: false },

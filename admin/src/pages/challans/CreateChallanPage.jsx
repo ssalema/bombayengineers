@@ -1,5 +1,5 @@
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
-import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router';
+import { Link as RouterLink, useSearchParams } from 'react-router';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -19,6 +19,7 @@ import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import { challanApi, clientApi, descriptionApi } from '../../api/services';
 import { queryKeys } from '../../api/queryKeys';
+import { DialogCloseButton } from '../../components/common/DialogCloseButton';
 import { PageHeader } from '../../components/common/PageHeader';
 import { UnsavedChangesDialog } from '../../components/common/UnsavedChangesDialog';
 import { LocalizedDatePicker } from '../../components/common/LocalizedDatePicker';
@@ -31,6 +32,7 @@ import { getErrorMessage } from '../../utils/errors';
 import { ROUTES } from '../../config/constants';
 import { ClientFormDialog } from '../clients/ClientFormDialog';
 import { ChallanItemsEditor, emptyItem } from './ChallanItemsEditor';
+import { ChallanNotesEditor, emptyNote, NOTE_MAX_LENGTH, NOTES_MAX_COUNT } from './ChallanNotesEditor';
 
 const itemSchema = z.object({
   description: z.string().trim().min(1, 'Description is required').max(300, 'Too long'),
@@ -44,9 +46,12 @@ const schema = z.object({
     .refine((v) => !v.isAfter(dayjs(), 'day'), 'Date cannot be in the future'),
   client: z.object({ _id: z.string(), name: z.string() }, { invalid_type_error: 'Select a client' }).nullable().refine(Boolean, 'Select a client'),
   items: z.array(itemSchema).min(1, 'Add at least one item'),
+  notes: z.array(z.object({ text: z.string().max(NOTE_MAX_LENGTH, 'Too long') })).max(NOTES_MAX_COUNT),
 });
 
-const defaultValues = () => ({ date: dayjs(), client: null, items: [emptyItem()] });
+const defaultValues = () => ({ date: dayjs(), client: null, items: [emptyItem()], notes: [emptyNote()] });
+
+const cleanNotes = (notes) => (notes ?? []).map((n) => n.text.trim()).filter(Boolean);
 
 /** Uses the chosen day with the current time, so "Date & Time" reflects when it was issued. */
 const toChallanDate = (day) => {
@@ -80,15 +85,17 @@ function ItemsTotal({ control }) {
 }
 
 function DraftPreview({ control, challanNo }) {
-  const [date, client, items] = useWatch({ control, name: ['date', 'client', 'items'] });
+  const [date, client, items, notes] = useWatch({ control, name: ['date', 'client', 'items', 'notes'] });
   const draft = useMemo(
     () => ({
       challanNo,
       date: date?.isValid?.() ? date.toISOString() : undefined,
       clientName: client?.name ?? '',
+      client,
       items: (items ?? []).filter((i) => i.description || i.rate),
+      notes: cleanNotes(notes),
     }),
-    [challanNo, date, client, items],
+    [challanNo, date, client, items, notes],
   );
   // The A4 preview is heavy: defer it so keystrokes paint first.
   const deferredDraft = useDeferredValue(draft);
@@ -96,7 +103,6 @@ function DraftPreview({ control, challanNo }) {
 }
 
 export default function CreateChallanPage() {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
   const [searchParams] = useSearchParams();
@@ -145,7 +151,7 @@ export default function CreateChallanPage() {
     if (!preselectId) return;
     queryClient
       .fetchQuery({ queryKey: queryKeys.clients.detail(preselectId), queryFn: () => clientApi.get(preselectId).then((r) => r.data) })
-      .then((c) => setValue('client', { _id: c._id, name: c.name }, { shouldValidate: true }))
+      .then((c) => setValue('client', { _id: c._id, name: c.name, contactNumber: c.contactNumber }, { shouldValidate: true }))
       .catch(() => {});
   }, [preselectId, setValue, queryClient]);
 
@@ -155,6 +161,7 @@ export default function CreateChallanPage() {
         date: toChallanDate(values.date),
         client: values.client._id,
         items: values.items.map((i) => ({ description: i.description.trim(), qty: Number(i.qty), rate: Number(i.rate) })),
+        notes: cleanNotes(values.notes),
       }),
     onSuccess: async (res) => {
       await invalidateChallanData(queryClient);
@@ -167,6 +174,12 @@ export default function CreateChallanPage() {
       nextNumber.refetch();
     },
   });
+
+  // The form is already reset on save, so dismissing just readies the next number.
+  const closeSavedDialog = () => {
+    setSavedChallan(null);
+    nextNumber.refetch();
+  };
 
   const onInvalid = () => enqueueSnackbar('Please fix the highlighted fields', { variant: 'warning' });
 
@@ -322,6 +335,18 @@ export default function CreateChallanPage() {
             <ItemsTotal control={control} />
           </Card>
 
+          <Card sx={{ p: { xs: 2, sm: 2.5 } }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 2, gap: 1, flexWrap: 'wrap' }}>
+              <Typography variant="subtitle1" component="h2">
+                Note
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Optional. Printed below the amount in words.
+              </Typography>
+            </Box>
+            <ChallanNotesEditor control={control} />
+          </Card>
+
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5 }}>
             <Button component={RouterLink} to={ROUTES.CHALLANS} color="inherit">
               Cancel
@@ -361,9 +386,10 @@ export default function CreateChallanPage() {
 
       <UnsavedChangesDialog when={isDirty && !saveMutation.isPending} title="Discard this challan?" />
 
-      <Dialog open={Boolean(savedChallan)} maxWidth="xs" fullWidth aria-labelledby="saved-title">
+      <Dialog open={Boolean(savedChallan)} onClose={closeSavedDialog} maxWidth="xs" fullWidth aria-labelledby="saved-title">
         {savedChallan && (
           <>
+            <DialogCloseButton onClose={closeSavedDialog} />
             <DialogContent sx={{ textAlign: 'center', pt: 4 }}>
               <CheckCircleRoundedIcon color="success" sx={{ fontSize: 56 }} />
               <Typography id="saved-title" variant="h6" sx={{ mt: 1 }}>
@@ -390,18 +416,8 @@ export default function CreateChallanPage() {
                 </Button>
               </Box>
             </DialogContent>
-            <DialogActions sx={{ justifyContent: 'space-between' }}>
-              <Button color="inherit" onClick={() => navigate(ROUTES.CHALLANS)}>
-                View all challans
-              </Button>
-              <Button
-                onClick={() => {
-                  setSavedChallan(null);
-                  nextNumber.refetch();
-                }}
-              >
-                Create another
-              </Button>
+            <DialogActions>
+              <Button onClick={closeSavedDialog}>Create another</Button>
             </DialogActions>
           </>
         )}

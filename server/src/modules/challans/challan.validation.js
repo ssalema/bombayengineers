@@ -20,6 +20,12 @@ export const createChallanSchema = z.object({
     .refine((d) => d.getTime() <= Date.now() + 24 * 60 * 60 * 1000, 'Challan date cannot be in the future'),
   client: objectId,
   items: z.array(itemSchema).min(1, 'Add at least one item').max(100, 'A challan can have at most 100 items'),
+  notes: z
+    .array(z.string().trim().max(200, 'Note is too long'))
+    .max(10, 'A challan can have at most 10 notes')
+    .optional()
+    .default([])
+    .transform((notes) => notes.filter(Boolean)),
 });
 
 const filterFields = {

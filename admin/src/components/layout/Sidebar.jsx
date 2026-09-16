@@ -35,15 +35,15 @@ export function Sidebar({ onNavigate }) {
             sx={{
               bgcolor: '#fff',
               borderRadius: radius.lg,
-              px: 1.5,
-              py: 1.25,
+              px: 0.75,
+              py: 0.5,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               minHeight: 52,
             }}
           >
-            <BrandLogo height={36} />
+            <BrandLogo height={56} sx={{ width: '100%' }} />
           </Box>
         </Box>
       )}

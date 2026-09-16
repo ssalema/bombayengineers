@@ -34,8 +34,10 @@ export function useSiteSettings() {
 // Static defaults from index.html / public/. Used until settings load and when a
 // setting is blank, so the browser (tab, shortcuts, installed app) never sees an empty icon or name.
 const DEFAULT_APP_NAME = 'Bombay Engineers — Admin';
-const DEFAULT_DESCRIPTION = 'Bombay Engineers — Cash Challan Management Panel';
+const DEFAULT_DESCRIPTION = 'Bombay Engineers — Cash Challan Management System';
 const DEFAULT_ICON = '/favicon.png';
+// Square, padded icon: iOS stretches a non-square touch icon on the home screen.
+const DEFAULT_TOUCH_ICON = '/apple-icon.png';
 
 const setHeadLink = (id, rel, href) => {
   let link = document.getElementById(id);
@@ -84,8 +86,7 @@ export function useDocumentBranding() {
   }, [siteName, tagline, logoUrl]);
 
   useEffect(() => {
-    const icon = faviconUrl || DEFAULT_ICON;
-    setHeadLink('app-favicon', 'icon', icon);
-    setHeadLink('app-touch-icon', 'apple-touch-icon', icon);
+    setHeadLink('app-favicon', 'icon', faviconUrl || DEFAULT_ICON);
+    setHeadLink('app-touch-icon', 'apple-touch-icon', faviconUrl || DEFAULT_TOUCH_ICON);
   }, [faviconUrl]);
 }

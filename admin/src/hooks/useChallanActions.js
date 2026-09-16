@@ -19,7 +19,7 @@ export function invalidateChallanData(queryClient) {
 export function useChallanActions() {
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
-  const { siteName } = useSiteSettings();
+  const { siteName, faviconUrl } = useSiteSettings();
   const [busy, setBusy] = useState(null); // `${id}:pdf` | `${id}:print`
 
   const resolveChallan = useCallback(
@@ -42,10 +42,10 @@ export function useChallanActions() {
         const full = await resolveChallan(challan);
         const doc = await import('../components/challan/challanDocument');
         if (kind === 'pdf') {
-          await doc.downloadChallanPdf({ challan: full, siteName });
+          await doc.downloadChallanPdf({ challan: full, siteName, watermarkUrl: faviconUrl });
           enqueueSnackbar(`Downloaded ${doc.challanFileBase(full)}.pdf`, { variant: 'success' });
         } else {
-          await doc.printChallan({ challan: full });
+          await doc.printChallan({ challan: full, watermarkUrl: faviconUrl });
         }
       } catch (error) {
         enqueueSnackbar(getErrorMessage(error, kind === 'pdf' ? 'Could not generate PDF' : 'Could not print challan'), {
@@ -55,7 +55,7 @@ export function useChallanActions() {
         setBusy(null);
       }
     },
-    [resolveChallan, siteName, enqueueSnackbar],
+    [resolveChallan, siteName, faviconUrl, enqueueSnackbar],
   );
 
   const deleteMutation = useMutation({

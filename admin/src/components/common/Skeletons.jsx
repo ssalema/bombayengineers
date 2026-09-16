@@ -1,6 +1,6 @@
 import { Box, Card, Divider, Skeleton } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { brand, radius } from '../../theme/theme';
+import { brand, fullViewportHeight, radius } from '../../theme/theme';
 import { SIDEBAR_WIDTH } from '../layout/Sidebar';
 import { StatGrid } from './StatCard';
 
@@ -289,7 +289,7 @@ const onDark = alpha('#fff', 0.12);
 /** Sidebar + top bar + dashboard content, shown while the session is being restored. */
 export function AppShellSkeleton() {
   return (
-    <Status sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
+    <Status sx={{ display: 'flex', ...fullViewportHeight, bgcolor: 'background.default' }}>
       <Box sx={{ display: { xs: 'none', lg: 'flex' }, flexDirection: 'column', width: SIDEBAR_WIDTH, flexShrink: 0, bgcolor: brand.dark, px: 2.5, pt: 2.5 }}>
         <Skeleton variant="rounded" height={52} sx={{ bgcolor: onDark, borderRadius: radius.lg, mb: 3 }} />
         {Array.from({ length: 5 }, (_, i) => (
@@ -318,7 +318,7 @@ export function AppShellSkeleton() {
 /** Split login layout, shown while checking whether a session already exists. */
 export function LoginSkeleton() {
   return (
-    <Status sx={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.05fr 1fr' }, bgcolor: 'background.default' }}>
+    <Status sx={{ ...fullViewportHeight, display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.05fr 1fr' }, bgcolor: 'background.default' }}>
       <Box sx={{ display: { xs: 'none', md: 'flex' }, flexDirection: 'column', justifyContent: 'space-between', p: 6, background: `linear-gradient(160deg, ${brand.main} 0%, ${brand.dark} 70%)` }}>
         <Skeleton variant="rounded" width={220} height={64} sx={{ bgcolor: onDark, borderRadius: radius.lg }} />
         <Box sx={{ maxWidth: 460 }}>

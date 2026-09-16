@@ -1,12 +1,14 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { Box } from '@mui/material';
 import { shadow } from '../../theme/theme';
+import { useSiteSettings } from '../../hooks/useSiteSettings';
 import { ChallanCopy } from './ChallanTemplate';
 
 const A4_WIDTH_PX = (210 / 25.4) * 96; // 210mm at 96 dpi
 
 /** Renders the real A4 challan template scaled down to fit its container. */
 export function ScaledChallanPreview({ challan }) {
+  const { faviconUrl } = useSiteSettings();
   const containerRef = useRef(null);
   const pageRef = useRef(null);
   const [scale, setScale] = useState(0.6);
@@ -45,7 +47,7 @@ export function ScaledChallanPreview({ challan }) {
           boxShadow: shadow.page,
         }}
       >
-        <ChallanCopy challan={challan} variant="preview" />
+        <ChallanCopy challan={challan} variant="preview" watermarkUrl={faviconUrl} />
       </Box>
     </Box>
   );

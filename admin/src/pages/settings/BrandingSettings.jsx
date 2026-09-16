@@ -6,8 +6,11 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import SwapHorizRoundedIcon from '@mui/icons-material/SwapHorizRounded';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import { radius } from '../../theme/theme';
+import { prepareImageUpload } from '../../utils/image';
 
 const MAX_SIZE = 2 * 1024 * 1024;
+/** Larger picks (e.g. phone photos) are downscaled to this before upload. */
+const MAX_DIMENSION = { logo: 1200, favicon: 512 };
 const ACCEPT = {
   logo: ['image/png', 'image/jpeg', 'image/webp'],
   favicon: ['image/png', 'image/x-icon', 'image/vnd.microsoft.icon', 'image/webp'],
@@ -20,7 +23,7 @@ const COPY = {
   },
   favicon: {
     title: 'Favicon',
-    hint: 'Square PNG, 64×64px or larger',
+    hint: 'Square PNG, 64×64px or larger. Also used as the challan watermark.',
   },
 };
 
@@ -30,10 +33,11 @@ function AssetField({ asset, currentUrl, pending, disabled, onPick, onRemove }) 
   const { enqueueSnackbar } = useSnackbar();
   const copy = COPY[asset];
 
-  const handleFile = (event) => {
-    const file = event.target.files?.[0];
+  const handleFile = async (event) => {
+    const picked = event.target.files?.[0];
     event.target.value = '';
-    if (!file) return;
+    if (!picked) return;
+    const file = await prepareImageUpload(picked, { maxBytes: MAX_SIZE, maxDimension: MAX_DIMENSION[asset] });
     if (!ACCEPT[asset].includes(file.type)) {
       enqueueSnackbar('Unsupported file type', { variant: 'warning' });
       return;

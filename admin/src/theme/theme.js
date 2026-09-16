@@ -1,12 +1,13 @@
 import { createTheme, alpha } from '@mui/material/styles';
 
+/** Sampled from the logo (docs/logo.png): mark + wordmark #205B75, tagline #231F20. Tints/shades keep the logo hue (198°). */
 export const brand = {
-  main: '#1B5A72',
-  dark: '#123E4F',
-  light: '#3E7F97',
-  lighter: '#E7F0F4',
-  ink: '#1F2A30',
-  charcoal: '#2B2B2B',
+  main: '#205B75',
+  dark: '#164254',
+  light: '#4A809A',
+  lighter: '#E8F1F5',
+  ink: '#231F20',
+  charcoal: '#231F20',
 };
 
 /** Radius scale. Use these strings in `sx`; bare numbers are multiplied by shape.borderRadius. */
@@ -23,8 +24,11 @@ export const radius = {
 /** Shadows used outside MUI's elevation scale. */
 export const shadow = {
   floating: '0 8px 24px rgba(15, 23, 42, 0.12)',
-  page: '0 1px 3px rgba(16, 42, 54, 0.08), 0 8px 24px rgba(16, 42, 54, 0.08)',
+  page: '0 1px 3px rgba(22, 66, 84, 0.08), 0 8px 24px rgba(22, 66, 84, 0.08)',
 };
+
+/** Full-screen min height. `100vh` includes the collapsible browser toolbar on phones; `100dvh` is the visible height. */
+export const fullViewportHeight = { minHeight: '100vh', '@supports (min-height: 100dvh)': { minHeight: '100dvh' } };
 
 const fontFamily = '"Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
 
@@ -38,13 +42,13 @@ export const theme = createTheme({
     warning: { main: '#C77C0E' },
     error: { main: '#C8372D' },
     info: { main: '#2F74C0' },
-    background: { default: '#F4F7F9', paper: '#FFFFFF' },
-    text: { primary: brand.ink, secondary: '#5C6B73' },
-    divider: '#E3E9ED',
-    /** Neutral fills: subtle (table heads), muted (read-only fields), strong (selected hover). */
-    surface: { subtle: '#F7FAFB', muted: '#EEF2F4', strong: '#E6EBEE' },
-    /** Chart bar colour (logo hue). */
-    chart: { bar: '#1677A3', grid: '#E9EEF1' },
+    background: { default: '#F3F7F9', paper: '#FFFFFF' },
+    text: { primary: brand.ink, secondary: '#5B6A72' },
+    divider: '#E1E9ED',
+    /** Neutral fills (logo hue, low saturation): subtle (table heads), muted (read-only fields), strong (selected hover). */
+    surface: { subtle: '#F6FAFB', muted: '#EDF3F5', strong: '#E4ECEF' },
+    /** Chart bar colour (logo colour). */
+    chart: { bar: brand.main, grid: '#E8EEF1' },
     overlay: { scrim: alpha(brand.ink, 0.5), toolbar: alpha(brand.ink, 0.85) },
   },
   shape: { borderRadius: 10 },

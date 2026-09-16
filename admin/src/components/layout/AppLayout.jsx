@@ -3,6 +3,7 @@ import { Outlet } from 'react-router';
 import { Box, Drawer, useMediaQuery, useTheme } from '@mui/material';
 import { Sidebar, SIDEBAR_WIDTH } from './Sidebar';
 import { Topbar } from './Topbar';
+import { fullViewportHeight } from '../../theme/theme';
 
 export function AppLayout() {
   const theme = useTheme();
@@ -10,7 +11,7 @@ export function AppLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
+    <Box sx={{ display: 'flex', ...fullViewportHeight, bgcolor: 'background.default' }}>
       <Box component="nav" aria-label="Main navigation" sx={{ width: { lg: SIDEBAR_WIDTH }, flexShrink: { lg: 0 } }}>
         {isDesktop ? (
           <Drawer

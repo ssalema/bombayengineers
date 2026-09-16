@@ -17,6 +17,7 @@ import { authApi } from '../../api/services';
 import { useAuth } from '../../context/AuthContext';
 import { applyServerErrors, getErrorMessage } from '../../utils/errors';
 import { initials } from '../../utils/format';
+import { prepareImageUpload } from '../../utils/image';
 import { radius } from '../../theme/theme';
 
 const AVATAR_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
@@ -98,10 +99,11 @@ function AvatarField() {
   const busy = upload.isPending || remove.isPending;
   const photo = user?.avatar?.url;
 
-  const handleFile = (event) => {
-    const file = event.target.files?.[0];
+  const handleFile = async (event) => {
+    const picked = event.target.files?.[0];
     event.target.value = '';
-    if (!file) return;
+    if (!picked) return;
+    const file = await prepareImageUpload(picked, { maxBytes: AVATAR_MAX_SIZE, maxDimension: 512 });
     if (!AVATAR_TYPES.includes(file.type)) {
       enqueueSnackbar('Use a PNG, JPG or WEBP image', { variant: 'warning' });
       return;
@@ -310,7 +312,7 @@ function PasswordCard() {
           disabled={!isDirty || mutation.isPending}
           startIcon={mutation.isPending ? <CircularProgress size={16} color="inherit" /> : null}
         >
-          Change password
+          Update password
         </Button>
       </Box>
     </Card>

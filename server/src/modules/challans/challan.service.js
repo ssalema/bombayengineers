@@ -84,8 +84,8 @@ export async function getChallan(id) {
   return challan;
 }
 
-export async function createChallan({ date, client: clientId, items }, userId) {
-  const client = await Client.findById(clientId).select('name').lean();
+export async function createChallan({ date, client: clientId, items, notes }, userId) {
+  const client = await Client.findById(clientId).select('name contactNumber').lean();
   if (!client) throw ApiError.badRequest('Selected client does not exist', [{ field: 'client', message: 'Client not found' }]);
 
   for (let attempt = 1; attempt <= MAX_ALLOCATION_ATTEMPTS; attempt += 1) {
@@ -97,11 +97,13 @@ export async function createChallan({ date, client: clientId, items }, userId) {
         client: client._id,
         clientName: client.name,
         items,
+        notes,
         createdBy: userId,
       });
       invalidateDashboard();
       logger.info('Challan created', { challanNo, totalAmount: challan.totalAmount });
-      return challan.toObject();
+      // Same shape as getChallan (client populated), so the saved challan prints the contact number.
+      return { ...challan.toObject(), client };
     } catch (err) {
       const duplicateNumber = err?.code === 11000 && err?.keyPattern?.challanNo;
       if (!duplicateNumber || attempt === MAX_ALLOCATION_ATTEMPTS) throw err;

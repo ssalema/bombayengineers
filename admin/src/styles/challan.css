@@ -9,12 +9,17 @@
 }
 
 .ch-root {
-  --ch-brand: #1b5a72;
-  --ch-brand-tint: #e7f0f4;
-  --ch-ink: #1a1a1a;
-  --ch-muted: #555;
-  --ch-line: #2f3a40;
-  --ch-soft-line: #b8c4ca;
+  /* Logo colours (docs/logo.png): brand #205b75, ink #231f20 */
+  --ch-brand: #205b75;
+  --ch-brand-tint: #e8f1f5;
+  --ch-ink: #231f20;
+  --ch-muted: #5b6a72;
+  --ch-line: #2c4855;
+  --ch-soft-line: #b5c7cf;
+  --ch-table-line: #8fabb8;
+  /* Column dividers inside the brand bars (brand + 35% white, solid for html2canvas) */
+  --ch-brand-divider: #6e94a5;
+  --ch-cut: #7a8e97;
   font-family: 'Inter Variable', 'Inter', 'Segoe UI', Arial, sans-serif;
   color: var(--ch-ink);
   background: #fff;
@@ -70,18 +75,18 @@
 }
 .ch-title {
   display: inline-block;
-  padding: 1.2mm 6mm;
-  border: 0.35mm solid var(--ch-brand);
-  border-radius: 1mm;
+  padding: 2.1mm 9mm;
+  border: 0.45mm solid var(--ch-brand);
+  border-radius: 1.2mm;
   color: var(--ch-brand);
   font-weight: 800;
-  font-size: 11.5pt;
+  font-size: 17pt;
   letter-spacing: 0.18em;
 }
 .ch-copy-label {
   position: absolute;
   right: 0;
-  font-size: 7.5pt;
+  font-size: 9pt;
   font-weight: 600;
   color: var(--ch-muted);
   text-transform: uppercase;
@@ -96,6 +101,11 @@
   margin-bottom: 2mm;
 }
 .ch-meta-item {
+  white-space: nowrap;
+}
+.ch-ms-contact {
+  flex: none;
+  margin-left: 4mm;
   white-space: nowrap;
 }
 .ch-label {
@@ -122,29 +132,68 @@
 
 /* Items table */
 .ch-table-wrap {
+  position: relative;
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
+/* Wraps the table alone (not the words/notes below it) so the watermark centres on the table. */
+.ch-table-box {
+  position: relative;
+}
+/* Branding favicon, faint behind the items table. Sized in % of the table so it grows and shrinks
+   with the row count. Positioned + z-index so it paints under the table's transparent cells
+   (positioned elements would otherwise sit on top). */
+.ch-watermark {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 55%;
+  height: 72%;
+  object-fit: contain;
+  opacity: 0.04;
+  pointer-events: none;
+  user-select: none;
+}
 .ch-table {
+  position: relative;
+  z-index: 1;
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
 }
 .ch-table th,
 .ch-table td {
-  border: 0.25mm solid var(--ch-line);
+  border: 0.25mm solid var(--ch-table-line);
   padding: 1.1mm 2mm;
   vertical-align: middle;
 }
+/* Header and total: solid brand bars with white text and light column dividers */
+.ch-table thead th,
+.ch-table tfoot td {
+  background: var(--ch-brand);
+  border-color: var(--ch-brand);
+  border-left-color: var(--ch-brand-divider);
+  border-right-color: var(--ch-brand-divider);
+  color: #fff;
+}
+/* Outer edges stay brand so the bar keeps a crisp outline */
+.ch-table thead th:first-child,
+.ch-table tfoot td:first-child {
+  border-left-color: var(--ch-brand);
+}
+.ch-table thead th:last-child,
+.ch-table tfoot td:last-child {
+  border-right-color: var(--ch-brand);
+}
 .ch-table thead th {
-  background: var(--ch-brand-tint);
-  color: var(--ch-brand);
-  font-weight: 700;
-  font-size: 8.5pt;
+  font-weight: 600;
+  font-size: 8pt;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.06em;
 }
 .ch-copy--full .ch-table th,
 .ch-copy--full .ch-table td {
@@ -154,6 +203,10 @@
   border-top-color: var(--ch-soft-line);
   border-bottom-color: var(--ch-soft-line);
   height: 5.6mm;
+}
+/* Collapsed borders: the upper cell wins a tie, so the last row supplies the total bar's top edge */
+.ch-table tbody tr:last-child td {
+  border-bottom-color: var(--ch-brand);
 }
 .ch-copy--full .ch-table tbody td {
   height: 7mm;
@@ -168,17 +221,18 @@
 .ch-num {
   font-variant-numeric: tabular-nums;
 }
+/* Total: same brand bar as the header */
 .ch-table tfoot td {
   font-weight: 700;
-  background: var(--ch-brand-tint);
   padding-top: 1.4mm;
   padding-bottom: 1.4mm;
 }
 .ch-total-label {
   text-align: right;
+  font-size: 8.5pt;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--ch-brand);
+  letter-spacing: 0.06em;
 }
 
 .ch-words {
@@ -193,6 +247,29 @@
 .ch-words-value {
   font-weight: 600;
   font-style: italic;
+}
+
+.ch-note {
+  margin-top: 1.5mm;
+  padding: 0 2mm;
+}
+.ch-note .ch-label {
+  font-weight: 600;
+}
+.ch-note-list {
+  margin-top: 0.5mm;
+}
+.ch-note-item {
+  display: flex;
+  gap: 0.8mm;
+}
+.ch-note-no {
+  flex: none;
+}
+.ch-note-text {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
 }
 
 /* Signatures */
@@ -223,8 +300,8 @@
   margin: 0 0 2mm;
 }
 .ch-copy--half .ch-title {
-  padding: 0.8mm 5mm;
-  font-size: 10.5pt;
+  padding: 1.5mm 8mm;
+  font-size: 16pt;
 }
 .ch-copy--half .ch-meta {
   margin-bottom: 1mm;
@@ -247,6 +324,9 @@
   margin-top: 1.5mm;
   padding: 1mm 2mm;
 }
+.ch-copy--half .ch-note {
+  margin-top: 1mm;
+}
 .ch-copy--half .ch-sign {
   padding-top: 8mm;
 }
@@ -265,14 +345,14 @@
   left: 6mm;
   right: 6mm;
   top: 50%;
-  border-top: 0.3mm dashed #7a878d;
+  border-top: 0.3mm dashed var(--ch-cut);
 }
 .ch-cut span {
   position: relative;
   background: #fff;
   padding: 0 2mm;
   font-size: 7pt;
-  color: #7a878d;
+  color: var(--ch-cut);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }

@@ -1,17 +1,19 @@
 import { Box, Button, Typography } from '@mui/material';
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
 import { useRouteError } from 'react-router';
+import { fullViewportHeight } from '../../theme/theme';
 
 export function RouteError({ inline = false }) {
   const error = useRouteError();
   // A failed lazy chunk usually means a new deployment; a reload fetches fresh assets.
-  const isChunkError = /dynamically imported module|Failed to fetch/i.test(error?.message ?? '');
+  // Chrome/Firefox: "...dynamically imported module", Safari: "Importing a module script failed."
+  const isChunkError = /dynamically imported module|Importing a module script failed|Failed to fetch/i.test(error?.message ?? '');
 
   return (
     <Box
       sx={{
         // Inline errors fill the layout's content area, not the whole viewport.
-        minHeight: inline ? 360 : '100vh',
+        ...(inline ? { minHeight: 360 } : fullViewportHeight),
         display: 'grid',
         placeItems: 'center',
         p: 3,

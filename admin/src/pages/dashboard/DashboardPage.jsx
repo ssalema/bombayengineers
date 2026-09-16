@@ -142,18 +142,19 @@ export default function DashboardPage() {
         <TableContainer sx={{ borderTop: 1, borderColor: 'divider' }}>
           <Table
             sx={{
-              minWidth: 640,
+              minWidth: 720,
               tableLayout: 'fixed',
               '& .MuiTableCell-root:first-of-type': { pl: { xs: 2, sm: 2.5 } },
               '& .MuiTableCell-root:last-of-type': { pr: { xs: 2, sm: 2.5 } },
             }}
             aria-label="Recent challans"
           >
+            {/* Date column is sized in px so "11 Sep 2026, 06:52 PM" plus padding never overflows the cell. */}
             <colgroup>
               <col style={{ width: '20%' }} />
-              <col style={{ width: '36%' }} />
+              <col />
               <col style={{ width: '20%' }} />
-              <col style={{ width: '24%' }} />
+              <col style={{ width: 220 }} />
             </colgroup>
             <TableHead>
               <TableRow>
