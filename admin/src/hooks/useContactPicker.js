@@ -49,7 +49,15 @@ export function useContactPicker({ onError, onUnavailable } = {}) {
 
     setPicking(true);
     try {
-      const [contact] = await navigator.contacts.select(['name', 'tel'], { multiple: false });
+      const contacts = await navigator.contacts.select(['name', 'tel'], { multiple: false });
+      // Chrome's Android picker ignores `multiple: false` once its search box is used, so
+      // several contacts can still come back. They arrive in list order, not tap order, so
+      // there is no telling which one was meant — ask again rather than guess.
+      if (contacts.length > 1) {
+        onError?.('Please select only one contact.');
+        return null;
+      }
+      const [contact] = contacts;
       if (!contact) return null;
       return {
         name: contact.name?.find(Boolean)?.trim() ?? '',
