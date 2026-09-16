@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import { createElement, useCallback, useState } from 'react';
+import { Button } from '@mui/material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSnackbar } from 'notistack';
 import { challanApi } from '../api/services';
@@ -24,7 +25,7 @@ export function invalidateChallanData(queryClient) {
  */
 export function useChallanActions() {
   const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const { siteName, faviconUrl } = useSiteSettings();
   const [busy, setBusy] = useState(null); // `${id}:pdf` | `${id}:print`
   const [prompt, setPrompt] = useState(null); // { challan, kind } while the language dialog is open
@@ -60,12 +61,34 @@ export function useChallanActions() {
             variant: 'success',
           });
         } else {
-          await doc.printChallan({
+          const openPrint = await doc.printChallan({
             challan: full,
             watermarkUrl: faviconUrl,
             clientLanguage: languages.client,
             officeLanguage: languages.office,
           });
+          if (openPrint) {
+            // The print file took longer than the browser allows after a tap: ask for one more tap.
+            enqueueSnackbar(`${doc.challanFileBase(full)} is ready to print`, {
+              variant: 'info',
+              autoHideDuration: 20_000,
+              action: (snackbarKey) =>
+                createElement(
+                  Button,
+                  {
+                    color: 'inherit',
+                    size: 'small',
+                    onClick: () => {
+                      closeSnackbar(snackbarKey);
+                      openPrint().catch((error) =>
+                        enqueueSnackbar(getErrorMessage(error, 'Could not print challan'), { variant: 'error' }),
+                      );
+                    },
+                  },
+                  'Print',
+                ),
+            });
+          }
         }
       } catch (error) {
         enqueueSnackbar(getErrorMessage(error, kind === 'pdf' ? 'Could not generate PDF' : 'Could not print challan'), {
@@ -75,7 +98,7 @@ export function useChallanActions() {
         setBusy(null);
       }
     },
-    [resolveChallan, siteName, faviconUrl, enqueueSnackbar],
+    [resolveChallan, siteName, faviconUrl, enqueueSnackbar, closeSnackbar],
   );
 
   const closePrompt = useCallback(() => setPrompt(null), []);

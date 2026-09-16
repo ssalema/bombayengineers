@@ -2,23 +2,27 @@
 <html lang="en">
   <head>
     <!--
-      No business name appears here on purpose. The name, title and icons come from
+      The name, title and icons come from
       Settings → General at runtime (see useDocumentBranding in
       src/hooks/useSiteSettings.js), which also restores the last known name from
-      localStorage on the first paint. Until then the tab is untitled and the browser
-      shows the URL — a stand-in name would just be the wrong one.
+      localStorage on the first paint.
+      The static title and Open Graph tags below are for link previews
+      (WhatsApp, Telegram, etc.): their crawlers don't run JavaScript, so they only
+      ever see this file. The runtime branding overwrites them in the browser.
     -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#205B75" />
     <meta name="description" content="Cash Challan Management System" />
+    <meta property="og:title" content="Bombay Engineers - CCMS" />
+    <meta property="og:description" content="Cash Challan Management System" />
     <!-- Home-screen app mode on iOS < 16.4, which ignores the manifest's "display". -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <link id="app-favicon" rel="icon" type="image/png" href="/favicon.png" />
     <link id="app-touch-icon" rel="apple-touch-icon" sizes="180x180" href="/apple-icon.png" />
     <link id="app-manifest" rel="manifest" href="/manifest.webmanifest" />
-    <title></title>
+    <title>Bombay Engineers - CCMS</title>
     <!-- Runtime config (API URL), see public/config.js. -->
     <script defer src="/config.js"></script>
   </head>

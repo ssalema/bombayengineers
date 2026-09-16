@@ -78,10 +78,35 @@ const JPEG_QUALITY = 0.92;
 const toJpeg = (canvas) => canvas.toDataURL('image/jpeg', JPEG_QUALITY);
 
 /**
+ * Chromium (desktop Chrome/Edge, Android Chrome, Samsung Internet) honours `@page { margin: 0 }` and
+ * drops its URL/date header and footer, so the HTML sheet prints as exactly one A4 page.
+ * WebKit (every iOS browser, Safari) and Firefox add their own margins and footer, which no CSS can
+ * remove, pushing the sheet onto a second page. `userAgentData` only exists in Chromium; iOS Chrome
+ * is WebKit underneath, hence the explicit iOS check.
+ */
+const printsHtmlExactly = () => !isIOS() && Boolean(navigator.userAgentData);
+
+/**
+ * Prints both copies (client + office) on A4, one sheet per page, on every browser.
+ *
+ * Returns a function when the print file is ready but the browser needs a fresh tap to open it
+ * (iOS share sheet after the user gesture expired); call it from a click handler.
+ */
+export async function printChallan(options) {
+  if (printsHtmlExactly()) {
+    await printHtmlSheet(options);
+    return null;
+  }
+  const { challan } = options;
+  const blob = await buildPrintSheetPdf(options);
+  return printPdf(blob, `${challanFileBase(challan)}.pdf`);
+}
+
+/**
  * Prints both copies on A4 from the main document, with print CSS hiding the app UI.
  * iOS WebKit prints the parent page for iframe.print(), so an iframe cannot be used.
  */
-export async function printChallan({
+async function printHtmlSheet({
   challan,
   watermarkUrl,
   clientLanguage = DEFAULT_LANGUAGE,
@@ -170,16 +195,12 @@ const A4_WIDTH_PX = 794;
 const A4_HEIGHT_PX = 1123;
 
 /**
- * Renders the challan inside a hidden iframe with its own inlined CSS and a fixed A4 viewport,
+ * Renders challan markup inside a hidden iframe with its own inlined CSS and a fixed A4 viewport,
  * so phones (narrow viewport, font boosting, stylesheet re-fetch in html2canvas's clone) render
- * exactly like desktop.
+ * exactly like desktop. `languages` lists the copy languages, so their fonts are loaded first.
  */
-async function renderIsolatedChallan(challan, watermarkUrl, language) {
-  const markup = renderMarkup(
-    <div className="ch-root">
-      <ChallanCopy challan={challan} variant="full" watermarkUrl={watermarkUrl} language={language} />
-    </div>,
-  );
+async function renderIsolated(element, languages) {
+  const markup = renderMarkup(element);
 
   const iframe = document.createElement('iframe');
   iframe.setAttribute('aria-hidden', 'true');
@@ -204,7 +225,7 @@ html, body { margin: 0; padding: 0; width: ${A4_WIDTH_PX}px; background: #fff;
     // whatever is laid out at that moment, so an unloaded Gujarati face would fall back to a
     // system font (or render as boxes) in the PDF.
     const faces = [['Inter Variable', '₹0Aa']];
-    if (resolveLanguage(language) === 'gu') faces.push([GUJARATI_FAMILY, GUJARATI_SAMPLE]);
+    if (languages.some((l) => resolveLanguage(l) === 'gu')) faces.push([GUJARATI_FAMILY, GUJARATI_SAMPLE]);
     await Promise.all(
       faces.flatMap(([family, sample]) => FONT_WEIGHTS.map((w) => doc.fonts?.load(`${w} 16px "${family}"`, sample))),
     );
@@ -215,7 +236,92 @@ html, body { margin: 0; padding: 0; width: ${A4_WIDTH_PX}px; background: #fff;
   await waitForImages(doc);
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
-  return { iframe, element: doc.body.firstElementChild };
+  return { iframe, root: doc.body.firstElementChild };
+}
+
+/**
+ * Rasterises `element` at A4 width and adds it to the PDF, starting on a new page unless `firstPage`.
+ * Anything taller than A4 is sliced into consecutive pages.
+ */
+async function addElementPages(pdf, html2canvas, element, { scale, firstPage }) {
+  const canvas = await html2canvas(element, {
+    scale,
+    backgroundColor: '#ffffff',
+    logging: false,
+    useCORS: true,
+    width: A4_WIDTH_PX,
+    height: element.scrollHeight,
+    windowWidth: A4_WIDTH_PX,
+    windowHeight: Math.max(A4_HEIGHT_PX, element.scrollHeight),
+    scrollX: 0,
+    scrollY: 0,
+  });
+
+  const pageHeightPx = Math.floor((canvas.width * A4.height) / A4.width);
+
+  if (canvas.height <= pageHeightPx + scale) {
+    if (!firstPage) pdf.addPage();
+    // Rounding can leave the render a pixel taller than A4; clamp so it never spills.
+    pdf.addImage(toJpeg(canvas), 'JPEG', 0, 0, A4.width, Math.min(A4.height, (canvas.height * A4.width) / canvas.width));
+  } else {
+    // Very long challans: slice the render into consecutive A4 pages.
+    const slice = document.createElement('canvas');
+    slice.width = canvas.width;
+    const ctx = slice.getContext('2d');
+    for (let offset = 0, pageIndex = 0; offset < canvas.height; offset += pageHeightPx, pageIndex += 1) {
+      const h = Math.min(pageHeightPx, canvas.height - offset);
+      slice.height = h;
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, slice.width, h);
+      ctx.drawImage(canvas, 0, offset, canvas.width, h, 0, 0, canvas.width, h);
+      if (pageIndex > 0 || !firstPage) pdf.addPage();
+      pdf.addImage(toJpeg(slice), 'JPEG', 0, 0, A4.width, (h * A4.width) / canvas.width);
+    }
+    slice.width = 0;
+  }
+  // Free the bitmap straight away: iOS caps total canvas memory.
+  canvas.width = 0;
+  canvas.height = 0;
+}
+
+const loadPdfLibs = () =>
+  Promise.all([import('html2canvas-pro'), import('jspdf')]).then(([h2c, jspdf]) => ({
+    html2canvas: h2c.default,
+    jsPDF: jspdf.jsPDF,
+  }));
+
+const newA4Pdf = (jsPDF) => new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+
+/** Builds the two-copy print sheet as an exact A4 PDF, one `.ch-page` per PDF page. */
+async function buildPrintSheetPdf({
+  challan,
+  watermarkUrl,
+  clientLanguage = DEFAULT_LANGUAGE,
+  officeLanguage = DEFAULT_LANGUAGE,
+}) {
+  const { html2canvas, jsPDF } = await loadPdfLibs();
+  const { iframe, root } = await renderIsolated(
+    <ChallanPrintSheet
+      challan={challan}
+      watermarkUrl={watermarkUrl}
+      clientLanguage={clientLanguage}
+      officeLanguage={officeLanguage}
+    />,
+    [clientLanguage, officeLanguage],
+  );
+
+  try {
+    const pdf = newA4Pdf(jsPDF);
+    pdf.setProperties({ title: challanFileBase(challan), subject: 'Delivery Challan' });
+    const pages = Array.from(root.querySelectorAll('.ch-page'));
+    for (const [index, page] of pages.entries()) {
+      // Higher than the download's scale: this copy goes to paper.
+      await addElementPages(pdf, html2canvas, page, { scale: 3, firstPage: index === 0 });
+    }
+    return pdf.output('blob');
+  } finally {
+    iframe.remove();
+  }
 }
 
 const isIOS = () =>
@@ -242,6 +348,10 @@ async function deliverPdf(blob, fileName) {
     }
   }
 
+  downloadBlob(blob, fileName);
+}
+
+function downloadBlob(blob, fileName) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -255,50 +365,89 @@ async function deliverPdf(blob, fileName) {
   setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
-/** Downloads one challan copy as "Client Name (Challan Number).pdf". */
-export async function downloadChallanPdf({ challan, siteName, watermarkUrl, language = DEFAULT_LANGUAGE }) {
-  const [{ default: html2canvas }, { jsPDF }] = await Promise.all([import('html2canvas-pro'), import('jspdf')]);
+/** Opens the iOS share sheet (which has "Print"). Resolves false if a fresh user tap is needed. */
+async function sharePdfFile(file) {
+  try {
+    await navigator.share({ files: [file], title: file.name });
+    return true;
+  } catch (error) {
+    if (error?.name === 'AbortError') return true; // User closed the share sheet.
+    if (error?.name === 'NotAllowedError') return false; // The tap that started this has expired.
+    throw error;
+  }
+}
 
-  const { iframe, element } = await renderIsolatedChallan(challan, watermarkUrl, language);
+/** Prints a PDF blob through the browser's PDF viewer in a hidden iframe (desktop Firefox / Safari). */
+function printPdfInFrame(blob) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(blob);
+    const frame = document.createElement('iframe');
+    frame.setAttribute('aria-hidden', 'true');
+    frame.style.cssText = 'position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0;pointer-events:none;';
+    frame.onload = () => {
+      // Give the PDF viewer a moment to initialise before asking it to print.
+      setTimeout(() => {
+        try {
+          frame.contentWindow.focus();
+          frame.contentWindow.print();
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      }, 300);
+    };
+    frame.src = url;
+    document.body.appendChild(frame);
+    // The print dialog may stay open a while; remove the frame well after it closes.
+    setTimeout(() => {
+      frame.remove();
+      URL.revokeObjectURL(url);
+    }, 5 * 60_000);
+  });
+}
+
+/**
+ * Sends the print-sheet PDF to the platform's PDF printing, which never adds the browser's
+ * URL/date footer and always scales the A4 page to fit the paper.
+ * Returns a retry function if a fresh tap is needed to open the share sheet.
+ */
+async function printPdf(blob, fileName) {
+  if (isIOS()) {
+    const file = new File([blob], fileName, { type: 'application/pdf' });
+    if (navigator.canShare?.({ files: [file] })) {
+      if (await sharePdfFile(file)) return null;
+      return () => sharePdfFile(file);
+    }
+    // Older iOS without file sharing: the downloaded PDF opens in Quick Look, which can print.
+    downloadBlob(blob, fileName);
+    return null;
+  }
 
   try {
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      backgroundColor: '#ffffff',
-      logging: false,
-      useCORS: true,
-      width: A4_WIDTH_PX,
-      height: element.scrollHeight,
-      windowWidth: A4_WIDTH_PX,
-      windowHeight: Math.max(A4_HEIGHT_PX, element.scrollHeight),
-      scrollX: 0,
-      scrollY: 0,
-    });
+    await printPdfInFrame(blob);
+  } catch {
+    // The browser would not print the embedded PDF: hand over the file to print from its viewer.
+    downloadBlob(blob, fileName);
+  }
+  return null;
+}
 
-    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+/** Downloads one challan copy as "Client Name (Challan Number).pdf". */
+export async function downloadChallanPdf({ challan, siteName, watermarkUrl, language = DEFAULT_LANGUAGE }) {
+  const { html2canvas, jsPDF } = await loadPdfLibs();
+
+  const { iframe, root } = await renderIsolated(
+    <div className="ch-root">
+      <ChallanCopy challan={challan} variant="full" watermarkUrl={watermarkUrl} language={language} />
+    </div>,
+    [language],
+  );
+
+  try {
+    const pdf = newA4Pdf(jsPDF);
     const title = challanFileBase(challan);
     pdf.setProperties({ title, subject: 'Delivery Challan', creator: siteName });
-
-    const pageHeightPx = Math.floor((canvas.width * A4.height) / A4.width);
-
-    if (canvas.height <= pageHeightPx + 2) {
-      pdf.addImage(toJpeg(canvas), 'JPEG', 0, 0, A4.width, (canvas.height * A4.width) / canvas.width);
-    } else {
-      // Very long challans: slice the render into consecutive A4 pages.
-      const slice = document.createElement('canvas');
-      slice.width = canvas.width;
-      const ctx = slice.getContext('2d');
-      for (let offset = 0, pageIndex = 0; offset < canvas.height; offset += pageHeightPx, pageIndex += 1) {
-        const h = Math.min(pageHeightPx, canvas.height - offset);
-        slice.height = h;
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(0, 0, slice.width, h);
-        ctx.drawImage(canvas, 0, offset, canvas.width, h, 0, 0, canvas.width, h);
-        if (pageIndex > 0) pdf.addPage();
-        pdf.addImage(toJpeg(slice), 'JPEG', 0, 0, A4.width, (h * A4.width) / canvas.width);
-      }
-    }
-
+    await addElementPages(pdf, html2canvas, root, { scale: 2, firstPage: true });
     await deliverPdf(pdf.output('blob'), `${title}.pdf`);
   } finally {
     iframe.remove();
