@@ -35,8 +35,13 @@ export function ClientFormDialog({ open, client, onClose, onSaved }) {
     setError,
     setValue,
     getValues,
+    watch,
     formState: { errors },
   } = useForm({ resolver: zodResolver(clientSchema), defaultValues: { name: '', contactNumber: '' } });
+
+  // `name` is uncontrolled (via `register`), so MUI can't see the value `setValue` writes
+  // when a contact is picked and leaves the label sitting on top of the text.
+  const nameValue = watch('name');
 
   const onPickerError = useCallback((message) => enqueueSnackbar(message, { variant: 'error' }), [enqueueSnackbar]);
   // Devices without a phonebook API say so on tap rather than hiding the button, so the
@@ -101,6 +106,7 @@ export function ClientFormDialog({ open, client, onClose, onSaved }) {
             error={Boolean(errors.name)}
             helperText={errors.name?.message}
             {...register('name')}
+            slotProps={{ inputLabel: { shrink: nameValue ? true : undefined } }}
           />
           <TextField
             label="Contact number"
